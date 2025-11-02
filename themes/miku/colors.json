@@ -1,0 +1,50 @@
+{
+  "name": "Miku Color Scheme",
+  "description": "Cyan and Pink theme inspired by Hatsune Miku",
+  
+  "colors": {
+    "accent": "#39C5BB",
+    "accentLight": "#5DDDD3",
+    "accentDark": "#2BA39B",
+    "Secondary": "#FF69B4",
+    "secondaryLight": "#FFB6D9",
+    "secondaryDark": "#FF1493",
+    
+    "background": "#FFFFFF",
+    "backgroundDark": "#1E1E1E",
+    "surface": "#F5F5F5",
+    "surfaceDark": "#2D2D2D",
+    
+    "text": "#000000",
+    "textSecondary": "#666666",
+    "textDark": "#FFFFFF",
+    "textDarkSecondary": "#CCCCCC",
+    
+    "success": "#00FF7F",
+    "warning": "#FFD700",
+    "error": "#FF6B6B",
+    "info": "#39C5BB"
+  },
+  
+  "registry": {
+    "applySystemWide": true,
+    "accentColor": "0xBBC539",
+    "accentColorMenu": "0xBBC539",
+    "startColor": "0xBBC539",
+    "taskbarColor": "0xBBC539",
+    "titleBarColor": "0xBBC539"
+  },
+  
+  "explorer": {
+    "folderIcon": "#39C5BB",
+    "selectionColor": "#39C5BB",
+    "hoverColor": "#5DDDD3"
+  },
+  
+  "terminal": {
+    "background": "#1E1E1E",
+    "foreground": "#39C5BB",
+    "cursor": "#FF69B4",
+    "selection": "#39C5BB33"
+  }
+}

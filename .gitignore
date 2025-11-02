@@ -1,0 +1,35 @@
+# 编译产物
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 测试文件
+*.test
+*.out
+
+# 依赖
+vendor/
+
+# 构建目录
+bin/
+dist/
+
+# 日志文件
+*.log
+
+# 临时文件
+tiny11/
+scratchdir/
+oscdimg.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

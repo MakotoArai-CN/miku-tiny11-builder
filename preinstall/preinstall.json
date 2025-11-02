@@ -1,0 +1,25 @@
+{
+  "enabled": true,
+  "apps": [
+    {
+      "id": "chrome",
+      "name": "Google Chrome",
+      "description": "谷歌浏览器",
+      "version": "latest",
+      "source": "installers/ChromeSetup.exe",
+      "installCmd": "ChromeSetup.exe",
+      "silent": true,
+      "postScript": ""
+    },
+    {
+      "id": "7zip",
+      "name": "7-Zip",
+      "description": "开源压缩工具",
+      "version": "23.01",
+      "source": "installers/7z2301-x64.exe",
+      "installCmd": "7z2301-x64.exe",
+      "silent": true,
+      "postScript": ""
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "name": "Miku",
+  "version": "1.0.0",
+  "author": "Miku Tiny11 Project",
+  "description": "Official Miku theme with cyan and pink colors",
+  "enabled": true,
+  
+  "branding": {
+    "enabled": true,
+    "configFile": "branding.json"
+  },
+  
+  "wallpapers": {
+    "enabled": false,
+    "desktop": "wallpapers/desktop.jpg",
+    "lockscreen": "wallpapers/lockscreen.jpg",
+    "setAsDefault": false
+  },
+  
+  "colors": {
+    "enabled": true,
+    "configFile": "colors.json",
+    "applyTransparency": true
+  },
+  
+  "images": {
+    "enabled": false,
+    "systemLogo": "images/logo.png",
+    "oemLogo": "images/oem-logo.bmp",
+    "userTile": "images/user-tile.png",
+    "brandIcon": "images/brand-icon.ico"
+  },
+  
+  "boot": {
+    "enabled": false,
+    "customLogo": false,
+    "logoFile": "boot/bootlogo.bmp",
+    "backgroundColor": "#39C5BB"
+  },
+  
+  "sounds": {
+    "enabled": false,
+    "startup": "sounds/startup.wav",
+    "shutdown": "sounds/shutdown.wav",
+    "logon": "sounds/logon.wav"
+  },
+  
+  "fonts": {
+    "enabled": false,
+    "systemFont": "Segoe UI"
+  },
+  
+  "advanced": {
+    "enabled": true,
+    "modifyExplorer": false,
+    "settings": {
+      "accentColor": "#39C5BB",
+      "taskbarTransparency": true,
+      "roundedCorners": true,
+      "showFileExtensions": true,
+      "showHiddenFiles": false
+    }
+  }
+}

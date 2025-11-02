@@ -1,0 +1,35 @@
+{
+  "productName": "Miku Tiny11",
+  "edition": {
+    "mapOriginal": true,
+    "mappings": {
+      "Pro": "Professional",
+      "Home": "Home",
+      "Education": "Education",
+      "Enterprise": "Enterprise"
+    }
+  },
+  
+  "systemInfo": {
+    "registeredOwner": "Miku User",
+    "registeredOrganization": "Miku Community",
+    "manufacturer": "Miku Tiny11 Project",
+    "model": "Miku Edition 2024",
+    "supportHours": "24/7 Community Support",
+    "supportPhone": "+86 10086 (Community)",
+    "supportURL": "https://github.com/miku-tiny11"
+  },
+  
+  "versionInfo": {
+    "displayVersion": "Miku 2024",
+    "buildBranch": "miku_release",
+    "buildLab": "MikuTiny11",
+    "csdVersion": "Miku Edition"
+  },
+  
+  "oobe": {
+    "oemName": "Miku Tiny11",
+    "welcomeTitle": "Welcome to Miku Tiny11!",
+    "welcomeSubtitle": "Optimized Windows 11 Experience"
+  }
+}

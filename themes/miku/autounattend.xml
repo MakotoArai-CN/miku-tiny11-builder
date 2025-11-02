@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend"
+          xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <!-- OOBE 阶段设置 -->
+    <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-Shell-Setup"
+                   processorArchitecture="amd64"
+                   publicKeyToken="31bf3856ad364e35"
+                   language="neutral"
+                   versionScope="nonSxS">
+            <OOBE>
+                <HideEULAPage>true</HideEULAPage>
+                <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+                <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+                <HideWirelessSetupInOOBE>false</HideWirelessSetupInOOBE>
+                <ProtectYourPC>3</ProtectYourPC>
+            </OOBE>
+            
+            <!-- 用户账户设置 -->
+            <UserAccounts>
+                <LocalAccounts>
+                    <LocalAccount wcm:action="add">
+                        <Password>
+                            <Value></Value>
+                            <PlainText>true</PlainText>
+                        </Password>
+                        <Description>Miku User Account</Description>
+                        <DisplayName>Miku</DisplayName>
+                        <Group>Administrators</Group>
+                        <Name>Miku</Name>
+                    </LocalAccount>
+                </LocalAccounts>
+            </UserAccounts>
+        </component>
+    </settings>
+    
+    <!-- Windows PE 阶段设置 -->
+    <settings pass="windowsPE">
+        <component name="Microsoft-Windows-Setup"
+                   processorArchitecture="amd64"
+                   publicKeyToken="31bf3856ad364e35"
+                   language="neutral"
+                   versionScope="nonSxS">
+            <DynamicUpdate>
+                <Enable>false</Enable>
+                <WillShowUI>Never</WillShowUI>
+            </DynamicUpdate>
+            
+            <ImageInstall>
+                <OSImage>
+                    <Compact>true</Compact>
+                    <WillShowUI>OnError</WillShowUI>
+                    <InstallFrom>
+                        <MetaData wcm:action="add">
+                            <Key>/IMAGE/INDEX</Key>
+                            <Value>1</Value>
+                        </MetaData>
+                    </InstallFrom>
+                </OSImage>
+            </ImageInstall>
+            
+            <UserData>
+                <ProductKey>
+                    <Key></Key>
+                </ProductKey>
+                <AcceptEula>true</AcceptEula>
+            </UserData>
+            
+            <!-- 显示Miku欢迎信息 -->
+            <RunSynchronous>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>1</Order>
+                    <Path>cmd.exe /c echo Welcome to Miku Tiny11!</Path>
+                </RunSynchronousCommand>
+            </RunSynchronous>
+        </component>
+    </settings>
+    
+    <!-- 专用化阶段设置 -->
+    <settings pass="specialize">
+        <component name="Microsoft-Windows-Shell-Setup"
+                   processorArchitecture="amd64"
+                   publicKeyToken="31bf3856ad364e35"
+                   language="neutral"
+                   versionScope="nonSxS">
+            <ComputerName>MIKU-PC</ComputerName>
+            <RegisteredOrganization>Miku Community</RegisteredOrganization>
+            <RegisteredOwner>Miku User</RegisteredOwner>
+            <TimeZone>China Standard Time</TimeZone>
+        </component>
+    </settings>
+</unattend>
