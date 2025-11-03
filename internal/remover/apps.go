@@ -93,7 +93,7 @@ func (r *AppRemover) RemoveProvisionedApps() error {
 // getRemovalList 获取要移除的应用列表
 func (r *AppRemover) getRemovalList() []string {
 	return []string{
-		"AppUp.IntelManagementandSecurityStatus",
+				"AppUp.IntelManagementandSecurityStatus",
 		"Clipchamp.Clipchamp",
 		"DolbyLaboratories.DolbyAccess",
 		"DolbyLaboratories.DolbyDigitalPlusDecoderOEM",
@@ -144,7 +144,8 @@ func (r *AppRemover) getRemovalList() []string {
 		"MicrosoftCorporationII.QuickAssist",
 		"MSTeams",
 		"MicrosoftTeams",
-		"Microsoft.549981C3F5F10",
+		"Microsoft.WindowsTerminal",
+		"Microsoft.549981C3F5F10", 
 	}
 }
 

@@ -1,5 +1,6 @@
 # 编译产物
 *.exe
+*.msi
 *.dll
 *.so
 *.dylib

@@ -6,8 +6,8 @@
       "name": "Google Chrome",
       "description": "谷歌浏览器",
       "version": "latest",
-      "source": "installers/ChromeSetup.exe",
-      "installCmd": "ChromeSetup.exe",
+      "source": "installers/ChromeStandaloneSetup64.exe",
+      "installCmd": "ChromeStandaloneSetup64.exe",
       "silent": true,
       "postScript": ""
     },
@@ -18,6 +18,16 @@
       "version": "23.01",
       "source": "installers/7z2301-x64.exe",
       "installCmd": "7z2301-x64.exe",
+      "silent": true,
+      "postScript": ""
+    },
+    {
+      "id": "PowerShell",
+      "name": "PowerShell-7.5.4",
+      "description": "微软开源的现代化PowerShell",
+      "version": "7.5.4",
+      "source": "installers/PowerShell-7.5.4-win-x64.msi",
+      "installCmd": "PowerShell-7.5.4-win-x64.msi",
       "silent": true,
       "postScript": ""
     }

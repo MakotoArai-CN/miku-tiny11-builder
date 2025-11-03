@@ -594,153 +594,146 @@ func (m *Manager) CleanupImage() error {
 func (m *Manager) ExportImage(index int) error {
 	sourceWim := filepath.Join(m.config.Tiny11Dir, "sources", "install.wim")
 	destWim := filepath.Join(m.config.Tiny11Dir, "sources", "install2.wim")
-
+	
 	m.log.Info("导出优化后的镜像...")
-
+	
+	// 检查源文件
 	if !utils.FileExists(sourceWim) {
 		return types.NewError(types.ErrCodeNotFound, "源WIM文件不存在", nil).
 			WithContext("path", sourceWim)
 	}
-
-	// 检查磁盘空间
+	
 	sourceInfo, err := os.Stat(sourceWim)
 	if err != nil {
 		return types.NewError(types.ErrCodeGeneral, "无法获取源文件信息", err)
 	}
-
+	
+	// 检查磁盘空间
 	drive := filepath.VolumeName(destWim)
 	if drive == "" {
 		drive = "C:"
 	}
-
+	
 	freeSpace, err := m.getFreeDiskSpace(drive)
 	if err != nil {
 		m.log.Warn("无法获取磁盘空间信息: %v", err)
 	} else {
-		requiredSpace := sourceInfo.Size() + (2 * 1024 * 1024 * 1024) // 额外2GB缓冲
-
+		requiredSpace := sourceInfo.Size() + (2 * 1024 * 1024 * 1024) // 需要额外 2GB
 		m.log.Info("磁盘空间检查:")
 		m.log.Info("  可用空间: %s", utils.FormatBytes(int64(freeSpace)))
 		m.log.Info("  需要空间: %s", utils.FormatBytes(requiredSpace))
-
+		
 		if int64(freeSpace) < requiredSpace {
 			return types.NewError(types.ErrCodeDiskSpace, "磁盘空间不足", nil).
 				WithContext("available", freeSpace).
 				WithContext("required", requiredSpace)
 		}
 	}
-
-	// 删除旧文件
+	
+	// 删除已存在的目标文件
 	if utils.FileExists(destWim) {
 		m.log.Info("删除旧的导出文件...")
 		utils.Takeown(destWim)
 		utils.GrantPermission(destWim)
 		os.Chmod(destWim, 0666)
-
 		if err := os.Remove(destWim); err != nil {
 			return types.NewError(types.ErrCodePermission, "无法删除旧文件", err).
 				WithContext("path", destWim)
 		}
-
 		m.log.Success("旧文件已删除")
 	}
-
-	// 导出镜像（带重试）
+	
+	// 导出镜像 - 重试机制
 	maxRetries := 3
 	var lastErr error
-
+	
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		if attempt > 1 {
 			m.log.Info("第 %d 次重试...", attempt)
 			time.Sleep(2 * time.Second)
 		}
-
-		spinner := utils.NewSpinner(fmt.Sprintf("导出镜像 (recovery压缩) - 尝试 %d/%d",
-			attempt, maxRetries))
+		
+		spinner := utils.NewSpinner(fmt.Sprintf("导出镜像 (recovery压缩) - 尝试 %d/%d", attempt, maxRetries))
 		spinner.Start()
-
-		output, err := utils.RunCommand("dism", "/English",
+		
+		// ✅ 关键修复：移除 /English 和 /CheckIntegrity，完全对齐 PowerShell 版本
+		output, err := utils.RunCommand("dism",
 			"/Export-Image",
 			fmt.Sprintf("/SourceImageFile:%s", sourceWim),
 			fmt.Sprintf("/SourceIndex:%d", index),
 			fmt.Sprintf("/DestinationImageFile:%s", destWim),
-			"/Compress:recovery",
-			"/CheckIntegrity")
-
+			"/Compress:recovery")
+		
 		spinner.Stop(err == nil)
-
+		
 		if err == nil {
 			m.log.Success("镜像导出成功")
 			break
 		}
-
+		
 		lastErr = err
 		m.log.Warn("导出失败: %v", err)
-
 		if output != "" {
 			m.log.Info("DISM 输出: %s", output)
 		}
-
-		// 清理失败的文件
+		
+		// 如果文件部分创建，删除它
 		if utils.FileExists(destWim) {
 			os.Remove(destWim)
 		}
-
+		
 		if attempt == maxRetries {
 			return types.NewError(types.ErrCodeDISM, "导出失败", lastErr).
 				WithContext("attempts", maxRetries).
 				WithContext("output", output)
 		}
 	}
-
+	
 	// 验证导出的文件
 	if !utils.FileExists(destWim) {
 		return types.NewError(types.ErrCodeGeneral, "导出后文件不存在", nil)
 	}
-
+	
 	destInfo, err := os.Stat(destWim)
 	if err != nil {
 		return types.NewError(types.ErrCodeGeneral, "无法获取导出文件信息", err)
 	}
-
-	if destInfo.Size() < 100*1024*1024 { // 小于100MB可能损坏
+	
+	// 验证文件大小（至少 100MB）
+	if destInfo.Size() < 100*1024*1024 {
 		return types.NewError(types.ErrCodeGeneral, "导出的文件太小，可能损坏", nil).
 			WithContext("size", destInfo.Size())
 	}
-
+	
 	m.log.Info("导出文件大小: %s", utils.FormatBytes(destInfo.Size()))
-
+	
 	// 替换原始文件
 	m.log.Info("替换原始WIM文件...")
-
 	utils.Takeown(sourceWim)
 	utils.GrantPermission(sourceWim)
 	os.Chmod(sourceWim, 0666)
-
+	
 	if err := os.Remove(sourceWim); err != nil {
 		return types.NewError(types.ErrCodePermission, "删除原文件失败", err)
 	}
-
+	
 	if err := os.Rename(destWim, sourceWim); err != nil {
 		return types.NewError(types.ErrCodeGeneral, "重命名文件失败", err)
 	}
-
-	// 验证最终文件
+	
+	// 显示压缩统计
 	finalInfo, err := os.Stat(sourceWim)
 	if err != nil {
 		return types.NewError(types.ErrCodeGeneral, "验证最终文件失败", err)
 	}
-
+	
 	compressionRatio := float64(sourceInfo.Size()-finalInfo.Size()) / float64(sourceInfo.Size()) * 100
-
 	m.log.Success("镜像导出完成")
 	m.log.Info("  原始大小: %s", utils.FormatBytes(sourceInfo.Size()))
 	m.log.Info("  压缩后:   %s", utils.FormatBytes(finalInfo.Size()))
 	m.log.Info("  压缩率:   %.1f%%", compressionRatio)
-
-	// 强制GC
+	
 	runtime.GC()
-
 	return nil
 }
 
