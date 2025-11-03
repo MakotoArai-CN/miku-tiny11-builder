@@ -11,7 +11,7 @@
   },
   
   "wallpapers": {
-    "enabled": false,
+    "enabled": true,
     "desktop": "wallpapers/desktop.jpg",
     "lockscreen": "wallpapers/lockscreen.jpg",
     "setAsDefault": false

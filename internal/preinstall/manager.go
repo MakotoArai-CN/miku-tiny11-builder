@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
 	"tiny11-builder/internal/config"
 	"tiny11-builder/internal/logger"
 	"tiny11-builder/internal/utils"
@@ -16,8 +17,8 @@ type Manager struct {
 }
 
 type PreinstallConfig struct {
-	Enabled bool          `json:"enabled"`
-	Apps    []AppPackage  `json:"apps"`
+	Enabled bool         `json:"enabled"`
+	Apps    []AppPackage `json:"apps"`
 }
 
 type AppPackage struct {
@@ -25,10 +26,10 @@ type AppPackage struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Version     string `json:"version"`
-	Source      string `json:"source"`      // 安装包路径
-	InstallCmd  string `json:"installCmd"`  // 安装命令
-	Silent      bool   `json:"silent"`      // 静默安装
-	PostScript  string `json:"postScript"`  // 安装后脚本
+	Source      string `json:"source"`
+	InstallCmd  string `json:"installCmd"`
+	Silent      bool   `json:"silent"`
+	PostScript  string `json:"postScript"`
 }
 
 func NewManager(cfg *config.Config, log *logger.Logger) *Manager {
@@ -38,22 +39,26 @@ func NewManager(cfg *config.Config, log *logger.Logger) *Manager {
 	}
 }
 
+//  优化配置加载，处理文件不存在的情况
 func (m *Manager) LoadConfig() (*PreinstallConfig, error) {
 	configPath := filepath.Join(m.config.PreinstallDir, "preinstall.json")
-	
+
+	// 检查文件是否存在
 	if !utils.FileExists(configPath) {
-		m.log.Info("预装配置不存在，跳过")
+		m.log.Info("预装配置文件不存在，跳过: %s", configPath)
 		return &PreinstallConfig{Enabled: false}, nil
 	}
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		m.log.Warn("无法读取预装配置文件: %v", err)
+		return &PreinstallConfig{Enabled: false}, nil
 	}
 
 	var cfg PreinstallConfig
 	if err := json.Unmarshal(data, &cfg); err != nil {
-		return nil, err
+		m.log.Warn("预装配置文件格式错误: %v", err)
+		return &PreinstallConfig{Enabled: false}, nil
 	}
 
 	return &cfg, nil
@@ -75,15 +80,27 @@ func (m *Manager) InstallApps(selectedApps []string) error {
 	mountPath := m.config.ScratchDir
 	appsToInstall := m.filterApps(cfg.Apps, selectedApps)
 
+	if len(appsToInstall) == 0 {
+		m.log.Info("没有选择要预装的软件")
+		return nil
+	}
+
 	for i, app := range appsToInstall {
 		m.log.Info("[%d/%d] 预装: %s v%s", i+1, len(appsToInstall), app.Name, app.Version)
-		
+
+		//  检查安装包是否存在
+		srcPath := filepath.Join(m.config.PreinstallDir, app.Source)
+		if !utils.FileExists(srcPath) {
+			m.log.Warn("  ✗ 安装包不存在: %s", srcPath)
+			continue
+		}
+
 		if err := m.installApp(app, mountPath); err != nil {
 			m.log.Warn("  ✗ 安装失败: %v", err)
 			continue
 		}
-		
-		m.log.Success("  ✓ 安装成功")
+
+		m.log.Success("  ✓ 配置成功")
 	}
 
 	return nil
@@ -91,11 +108,12 @@ func (m *Manager) InstallApps(selectedApps []string) error {
 
 func (m *Manager) filterApps(apps []AppPackage, selected []string) []AppPackage {
 	if len(selected) == 0 {
-		return apps
+		return []AppPackage{}
 	}
 
 	var filtered []AppPackage
 	selectedMap := make(map[string]bool)
+
 	for _, id := range selected {
 		selectedMap[id] = true
 	}
@@ -110,34 +128,30 @@ func (m *Manager) filterApps(apps []AppPackage, selected []string) []AppPackage 
 }
 
 func (m *Manager) installApp(app AppPackage, mountPath string) error {
-	// 复制安装包到镜像
 	srcPath := filepath.Join(m.config.PreinstallDir, app.Source)
-	if !utils.FileExists(srcPath) {
-		return fmt.Errorf("安装包不存在: %s", srcPath)
-	}
 
+	// 创建预装目录
 	destDir := filepath.Join(mountPath, "Windows", "Setup", "PreInstall")
 	os.MkdirAll(destDir, 0755)
 
+	// 复制安装包
 	destPath := filepath.Join(destDir, filepath.Base(srcPath))
 	if err := utils.CopyFile(srcPath, destPath); err != nil {
 		return err
 	}
 
-	// 创建首次启动脚本
+	// 创建安装脚本
 	scriptPath := filepath.Join(mountPath, "Windows", "Setup", "Scripts", "SetupComplete.cmd")
 	os.MkdirAll(filepath.Dir(scriptPath), 0755)
 
-	// 追加安装命令
 	installCmd := app.InstallCmd
 	if app.Silent {
 		installCmd += " /S /Silent"
 	}
 
-	script := fmt.Sprintf("@echo off\necho Installing %s...\ncd %%SystemRoot%%\\Setup\\PreInstall\n%s\n", 
+	script := fmt.Sprintf("@echo off\necho Installing %s...\ncd %%SystemRoot%%\\Setup\\PreInstall\n%s\n",
 		app.Name, installCmd)
 
-	// 追加模式写入
 	f, err := os.OpenFile(scriptPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 	if err != nil {
 		return err
